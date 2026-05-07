@@ -1,0 +1,18 @@
+# Python/FastAPI
+__pycache__/
+*.pyc
+venv/
+.env
+
+# Node/React
+node_modules/
+build/
+dist/
+npm-debug.log
+
+# Java
+*.class
+*.jar
+
+# macOS
+.DS_Store
