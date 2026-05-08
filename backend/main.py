@@ -55,7 +55,7 @@ app.add_middleware(
 # ---------------------------------------------------------------------------
 # Constants
 # ---------------------------------------------------------------------------
-EXEC_TIMEOUT = 5          
+EXEC_TIMEOUT = 15
 COMPILE_TIMEOUT = 15      
 MAX_STEPS = 300           
 JDI_TOOLS_JAR_CANDIDATES = [
@@ -102,7 +102,7 @@ def _java_home() -> str:
     try:
         result = subprocess.run(
             ["java", "-XshowSettings:all", "-version"],
-            capture_output=True, text=True, timeout=5
+            capture_output=True, text=True, timeout=15
         )
         for line in (result.stdout + result.stderr).splitlines():
             if "java.home" in line:
@@ -643,11 +643,13 @@ def execute_java(code: str) -> dict[str, Any]:
         if jdk_version >= 9 and not tools_jar:
             extra_java_flags = ["--add-modules", "jdk.jdi"]
 
-        user_jvm_cmd = (
-            ["java"]
-            + extra_java_flags
-            + [f"-agentlib:jdwp={jdwp_arg}", "-cp", user_classpath, class_name]
-        )
+        
+      user_jvm_cmd = (
+           ["java"]
+           + ["-Xmx128m", "-XX:TieredStopAtLevel=1"] 
+           + extra_java_flags
+           + [f"-agentlib:jdwp={jdwp_arg}", "-cp", user_classpath, class_name]
+           )
         log.info("Launching user JVM: %s", " ".join(user_jvm_cmd))
 
         user_proc = subprocess.Popen(
@@ -668,9 +670,10 @@ def execute_java(code: str) -> dict[str, Any]:
             agent_java_flags = ["--add-modules", "jdk.jdi"]
 
         agent_cmd = (
-            ["java"]
-            + agent_java_flags
-            + ["-cp", agent_rt_classpath, "JvmTraceAgent", str(jdwp_port), class_name]
+              ["java"]
+              + ["-Xmx128m", "-XX:TieredStopAtLevel=1"] 
+              + agent_java_flags
+               + ["-cp", agent_rt_classpath, "JvmTraceAgent", str(jdwp_port), class_name]
         )
         log.info("Launching trace agent: %s", " ".join(agent_cmd))
 
