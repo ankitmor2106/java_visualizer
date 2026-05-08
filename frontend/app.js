@@ -23,15 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let editor;
 
     // --- DEFAULT CODE ---
-    const defaultJavaCode = `class Record {
-    int id;
-    String status;
-    public Record(int id, String status) { 
-        this.id = id;
-        this.status = status;
-    }
-}
-
+    const defaultJavaCode = `{
 public class Main { 
     public static void main(String[] args) {
         // your code here
