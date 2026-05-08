@@ -869,10 +869,7 @@ async def health() -> dict:
 
 
 if __name__ == "__main__":
-    log.info("Starting Java Memory Visualizer backend on port 7070")
-    log.info("JDK version detected: %d", _java_major_version())
-    log.info("JAVA_HOME: %s", _java_home() or "(not set)")
-  # Use the PORT environment variable provided by the host, or default to 7070
-    port = int(os.environ.get("PORT", 7070))
+    # Render provides a "PORT" environment variable
+    port = int(os.environ.get("PORT", 7070)) 
     uvicorn.run("main:app", host="0.0.0.0", port=port)
     
