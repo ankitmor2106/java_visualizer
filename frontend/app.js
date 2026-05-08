@@ -25,15 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DEFAULT CODE ---
 const defaultJavaCode = `public class Main { 
     public static void main(String[] args) {
-        // Step 1: Add a primitive variable (Stack)
-        int age = 20;
-        
-        // Step 2: Create an object (Heap)
-        String name = "Your name";
-        
-        System.out.println("Hello " + name + ", you are " + age);
-        
-        // Try creating your own classes below!
+        // write your code here
     }
 }`;
 
