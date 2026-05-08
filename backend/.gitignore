@@ -1,12 +1,22 @@
-# Python
+# Python bytecode
 __pycache__/
 *.py[cod]
-*$py.class
-venv/
-.env
 
-# Java / JMV Temporary files
+# Virtual Environment
+venv/
+env/
+
+# Java Temporary Files (Specific to your JMV engine)
+# These are generated in the /backend folder during execution
 jmv_*
 *.class
+org/json/*.class
+
+# SHIM files (If you don't want the dynamically generated java files in Git)
+# But keep main.py!
 *.java
 !main.py
+!JvmTraceAgent.java
+
+# Environment variables
+.env
