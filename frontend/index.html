@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Java Memory Visualizer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="container">
+        <header>
+            <div class="logo">
+                <h1>Java Engine & Visualizer</h1>
+            </div>
+            <div class="controls">
+                <button id="theme-toggle" class="secondary-btn" title="Toggle Theme">Light Mode</button>
+            </div>
+        </header>
+        
+        <main class="workspace">
+            <div class="editor-area">
+                <section class="editor-section">
+                    <div class="panel-header">Source code</div>
+                    <div id="editor-container"></div>
+                </section>
+                
+                <div class="console-panel">
+                    <div class="panel-header">Console Output</div>
+                    <pre id="console-output">Awaiting execution...</pre>
+                </div>
+            </div>
+
+            <aside class="side-actions">
+                <button id="btn-compile" class="action-btn main-action">
+                    <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2v4"></path><path d="M12 18v4"></path><path d="M4.93 4.93l2.83 2.83"></path><path d="M16.24 16.24l2.83 2.83"></path><path d="M2 12h4"></path><path d="M18 12h4"></path><path d="M4.93 19.07l2.83-2.83"></path><path d="M16.24 7.76l2.83-2.83"></path></svg> 
+                    Compile
+                </button>
+                <div class="sub-actions">
+                    <button id="btn-run" class="action-btn sub-btn" disabled>
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg> 
+                        Run
+                    </button>
+                    <button id="btn-visualize" class="action-btn sub-btn" disabled>
+                        <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg> 
+                        Visualize
+                    </button>
+                </div>
+            </aside>
+        </main>
+
+        <div id="visualizer-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Memory Visualization</h2>
+                    <div class="step-controls">
+                        <button id="btn-prev" disabled>Prev</button>
+                        <span id="step-counter" class="badge">Step: 0 / 0</span>
+                        <button id="btn-next" disabled>Next</button>
+                    </div>
+                    <button id="btn-close-modal" class="close-btn">Close</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="memory-grid" id="memory-grid">
+                       <svg id="arrow-svg">
+                            <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--text-muted)" opacity="0.4" />
+                                </marker>
+                                <marker id="arrowhead-highlight" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                    <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent)" />
+                                </marker>
+                            </defs>
+                        </svg>
+
+                        <div class="memory-panel stack-panel">
+                            <div class="panel-header">Call Stack (Variables & References)</div>
+                            <div id="stack-container" class="memory-container list-view"></div>
+                        </div>
+
+                        <div class="memory-panel heap-panel">
+                            <div class="panel-header">Heap Memory (Objects & Data)</div>
+                            <div id="heap-container" class="memory-container vertical-circle-view"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="docs-section" id="documentation">
+            <div class="docs-container">
+                <div class="docs-header">
+                    <h2>Java Language & Architecture Reference</h2>
+                    <p>A comprehensive guide to understanding core Java constructs and how the Java Virtual Machine (JVM) manages them.</p>
+                </div>
+
+                <div class="docs-layout">
+                    <aside class="docs-sidebar">
+                        <nav>
+                            <ul>
+                                <li><a href="#doc-packages">1. Packages & Imports</a></li>
+                                <li><a href="#doc-classes">2. Classes & Objects</a></li>
+                                <li><a href="#doc-constructors">3. Constructors</a></li>
+                                <li><a href="#doc-variables">4. Types of Variables</a></li>
+                                <li><a href="#doc-methods">5. Methods & Scope</a></li>
+                                <li><a href="#doc-access">6. Access Modifiers</a></li>
+                                <li><a href="#doc-oop">7. Core OOP Concepts</a></li>
+                                <li><a href="#doc-stack">8. The Call Stack</a></li>
+                                <li><a href="#doc-heap">9. The Heap</a></li>
+                                <li><a href="#doc-gc">10. Garbage Collection</a></li>
+                                <li><a href="#doc-pass-by-value">11. Pass-by-Value</a></li>
+                            </ul>
+                        </nav>
+                    </aside>
+
+                    <div class="docs-content">
+                        <article id="doc-packages" class="doc-article">
+                            <h3>1. Packages & Imports</h3>
+                            <p>A <strong>Package</strong> in Java is a mechanism to encapsulate a group of classes, sub-packages, and interfaces. It prevents naming conflicts, controls access levels, and makes searching/locating classes easier.</p>
+                            <div class="doc-code"><pre><code>package com.visualizer;
+import java.util.List;</code></pre></div>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/package/packages.html" target="_blank" class="doc-link">Read official Package docs ↗</a>
+                        </article>
+
+                        <article id="doc-classes" class="doc-article">
+                            <h3>2. Classes & Objects</h3>
+                            <p>A <strong>Class</strong> is a blueprint or template that defines state and behavior. An <strong>Object</strong> is a physical instance of that blueprint allocated in the Heap memory at runtime.</p>
+                            <div class="doc-code"><pre><code>class Car { String color; } 
+Car myCar = new Car(); // 'myCar' is the reference to the object</code></pre></div>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/concepts/object.html" target="_blank" class="doc-link">Read official Object docs ↗</a>
+                        </article>
+
+                        <article id="doc-constructors" class="doc-article">
+                            <h3>3. Constructors</h3>
+                            <p>A <strong>Constructor</strong> initializes newly created objects. It is invoked automatically when an object is instantiated using the <code>new</code> keyword. It must share the exact name of the Class and cannot have a return type.</p>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/constructors.html" target="_blank" class="doc-link">Read official Constructor docs ↗</a>
+                        </article>
+
+                        <article id="doc-variables" class="doc-article">
+                            <h3>4. Types of Variables</h3>
+                            <p>Java is statically and strongly typed. Memory is handled differently based on the type:</p>
+                            <ul>
+                                <li><strong>Primitives:</strong> Store the exact literal value directly in memory (usually the Stack). Examples: <code>int</code>, <code>double</code>, <code>boolean</code>, <code>char</code>.</li>
+                                <li><strong>References:</strong> Store the memory address (pointer) of an object located in the Heap. Examples: <code>String</code>, Arrays, custom Classes.</li>
+                            </ul>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html" target="_blank" class="doc-link">Read official Data Types docs ↗</a>
+                        </article>
+
+                        <article id="doc-methods" class="doc-article">
+                            <h3>5. Methods & Scope</h3>
+                            <p>A <strong>Method</strong> is a collection of statements grouped together to perform an operation. Variables declared inside a method have <strong>local scope</strong>, meaning their lifecycle is tied exactly to that method's execution frame on the Call Stack.</p>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html" target="_blank" class="doc-link">Read official Method docs ↗</a>
+                        </article>
+
+                        <article id="doc-access" class="doc-article">
+                            <h3>6. Access Modifiers</h3>
+                            <p>Modifiers define the visibility and security level of classes, fields, and methods:</p>
+                            <ul>
+                                <li><strong>public:</strong> Accessible from any other class in any package.</li>
+                                <li><strong>private:</strong> Accessible only within the exact class it is declared in.</li>
+                                <li><strong>protected:</strong> Accessible within the same package and by subclasses.</li>
+                                <li><strong>default (package-private):</strong> Accessible only within the same package.</li>
+                            </ul>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/accesscontrol.html" target="_blank" class="doc-link">Read official Access Modifier docs ↗</a>
+                        </article>
+
+                        <article id="doc-oop" class="doc-article">
+                            <h3>7. Core OOP Concepts</h3>
+                            <ul>
+                                <li><strong>Inheritance:</strong> Creating new classes built upon existing ones using the <code>extends</code> keyword to promote code reuse.</li>
+                                <li><strong>Polymorphism:</strong> The ability of a single object or method to take on many forms (via overloading or overriding).</li>
+                                <li><strong>Encapsulation:</strong> Hiding internal data state and requiring all interaction to occur through public getter/setter methods.</li>
+                            </ul>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/concepts/" target="_blank" class="doc-link">Read official OOP Concepts docs ↗</a>
+                        </article>
+
+                        <article id="doc-stack" class="doc-article">
+                            <h3>8. The Call Stack</h3>
+                            <p>The Stack is a Last-In-First-Out (LIFO) memory structure. Every time a method is called, a new "frame" is pushed onto the stack containing its local variables and primitive data. When the method finishes, its frame is instantly destroyed.</p>
+                            <a href="https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html#jvms-2.5.2" target="_blank" class="doc-link">Read official JVM Stack docs ↗</a>
+                        </article>
+
+                        <article id="doc-heap" class="doc-article">
+                            <h3>9. The Heap</h3>
+                            <p>The Heap is the dynamic, globally shared memory area where all Java objects and arrays are allocated at runtime. Unlike the Stack, objects in the Heap can outlive the method that created them.</p>
+                            <a href="https://docs.oracle.com/javase/specs/jvms/se17/html/jvms-2.html#jvms-2.5.3" target="_blank" class="doc-link">Read official JVM Heap docs ↗</a>
+                        </article>
+
+                        <article id="doc-gc" class="doc-article">
+                            <h3>10. Garbage Collection (GC)</h3>
+                            <p>Java automatically manages memory. The Garbage Collector is a background process that monitors the Heap. If an object has zero active references pointing to it from the Stack (making it "unreachable" or "orphaned"), the GC will automatically delete it to free up memory.</p>
+                            <a href="https://docs.oracle.com/en/java/javase/17/gctuning/introduction-garbage-collection.html" target="_blank" class="doc-link">Read official Garbage Collection docs ↗</a>
+                        </article>
+
+                        <article id="doc-pass-by-value" class="doc-article">
+                            <h3>11. Pass-by-Value (References)</h3>
+                            <p>Java is strictly <strong>pass-by-value</strong>. However, when passing an object to a method, you are passing the <em>value of the reference</em> (the memory address). This means the method can modify the original object's data in the Heap, but it cannot change where the original variable points.</p>
+                            <a href="https://docs.oracle.com/javase/tutorial/java/javaOO/arguments.html" target="_blank" class="doc-link">Read official Passing Information docs ↗</a>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <footer>
+            <div class="footer-content">
+                <p>Engineered for JVM memory visualization. Powered by Monaco Editor.</p>
+                <p class="footer-subtext">© 2026 Java Visualizer Project</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.36.1/min/vs/loader.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Java / JMV Temporary files
+jmv_*
+*.class
+*.java
+!main.py
