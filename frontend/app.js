@@ -99,7 +99,7 @@ public class Main {
     });
 
     // --- API & BUTTON LOGIC ---
-    const API_ENDPOINT = 'http://localhost:7070/execute'; 
+    const API_ENDPOINT = 'https://java-visualizer-api.onrender.com/execute';
 
     // 1. COMPILE BUTTON
     btnCompile.addEventListener('click', async () => {
