@@ -32,28 +32,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 
-class A {
-    String name;
-
-    A(String n) {
-        name = n;
+//demo code 
+public class Main {
+    public static void main(String[] args) {
+        Student s1 = new Student("Aryan", 101);
+        Student s2 = new Student("Ankit", 102);
+        Student ref = s1;
+        
+        System.out.println("Enrolled: " + s1.name + " and " + s2.name);
     }
 }
 
-public class Main {
-    public static void main(String[] args) {
+class Student {
+    String name;
+    int id;
 
-        A[] a = {
-            new A("Ankit"),
-            new A("Rahul"),
-            new A("Aman"),
-            new A("Priya"),
-            new A("Sneha")
-        };
-
-        for (A x : a)
-            System.out.println(x.name);
+    Student(String name, int id) {
+        this.name = name;
+        this.id = id;
     }
+
 
 }`;
 
