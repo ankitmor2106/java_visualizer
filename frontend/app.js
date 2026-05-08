@@ -32,25 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 }
 
-//demo code 
-public class Main {
+public class Main { 
     public static void main(String[] args) {
-        Student s1 = new Student("Aryan", 101);
-        Student s2 = new Student("Ankit", 102);
-        Student ref = s1;
-        
-        System.out.println("Enrolled: " + s1.name + " and " + s2.name);
+        // your code here
     }
-}
 
-class Student {
-    String name;
-    int id;
-
-    Student(String name, int id) {
-        this.name = name;
-        this.id = id;
-    }
 
 
 }`;
