@@ -111,3 +111,190 @@ java-memory-visualizer/
 │
 ├── README.md
 └── docker-compose.yml
+```
+
+---
+
+# 🚀 Local Setup
+
+## Prerequisites
+
+Install the following:
+
+- Python 3.9+
+- OpenJDK 17
+- Docker (optional)
+
+---
+
+## 1. Clone the Repository
+
+```bash
+git clone https://github.com/your-username/java-memory-visualizer.git
+
+cd java-memory-visualizer
+```
+
+---
+
+## 2. Backend Setup
+
+### Create Virtual Environment
+
+```bash
+cd backend
+
+python -m venv venv
+```
+
+### Activate Environment
+
+#### macOS / Linux
+
+```bash
+source venv/bin/activate
+```
+
+#### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+### Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### Start FastAPI Server
+
+```bash
+uvicorn app.main:app --reload
+```
+
+Backend runs on:
+
+```bash
+http://localhost:8000
+```
+
+---
+
+## 3. Frontend Setup
+
+Open the `frontend/` directory using any static server.
+
+Example using VS Code Live Server:
+
+```bash
+frontend/index.html
+```
+
+Or using Python:
+
+```bash
+cd frontend
+
+python -m http.server 5500
+```
+
+Frontend runs on:
+
+```bash
+http://localhost:5500
+```
+
+---
+
+# ☕ Java Requirements
+
+Ensure Java 17 is installed:
+
+```bash
+java -version
+```
+
+Expected output:
+
+```bash
+openjdk version "17"
+```
+
+The backend internally compiles code using:
+
+```bash
+javac -g
+```
+
+The `-g` flag preserves debugging metadata required for JDI memory tracing.
+
+---
+
+# 🐳 Docker Deployment
+
+The backend is fully containerized with:
+
+- Python 3.9
+- OpenJDK 17
+- FastAPI runtime
+
+## Build Image
+
+```bash
+docker build -t java-memory-visualizer .
+```
+
+## Run Container
+
+```bash
+docker run -p 8000:8000 java-memory-visualizer
+```
+
+---
+
+# ☁️ Render Deployment
+
+Recommended deployment platform: **Render**
+
+## Suggested Setup
+
+### Backend
+- Environment: Docker
+- Root Directory: `/backend`
+- Start Command handled by Docker
+
+### Frontend
+- Deploy as static site
+- Publish directory: `/frontend`
+
+---
+
+# 🔍 How It Works
+
+1. User writes Java code in Monaco Editor
+2. Backend compiles code using `javac -g`
+3. JVM launches with custom Java Agent
+4. JDI captures runtime memory events
+5. Events are streamed as structured JSON
+6. Frontend renders:
+   - Stack frames
+   - Heap objects
+   - SVG reference arrows
+7. User steps through execution visually
+
+---
+
+# 🎯 Vision
+
+Java Memory Visualizer aims to make JVM internals intuitive and observable.
+
+Instead of reading static diagrams, developers can watch memory evolve in real time — making concepts like references, stack frames, object allocation, and method execution significantly easier to understand.
+
+---
+
+
+# 👨‍💻 Author - Ankitmor2106
+
+
+Built for developers, students, and educators exploring JVM internals.
