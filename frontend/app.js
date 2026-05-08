@@ -23,14 +23,18 @@ document.addEventListener('DOMContentLoaded', () => {
     let editor;
 
     // --- DEFAULT CODE ---
-    const defaultJavaCode = `{
-public class Main { 
+const defaultJavaCode = `public class Main { 
     public static void main(String[] args) {
-        // your code here
+        // Step 1: Add a primitive variable (Stack)
+        int age = 20;
+        
+        // Step 2: Create an object (Heap)
+        String name = "Your name";
+        
+        System.out.println("Hello " + name + ", you are " + age);
+        
+        // Try creating your own classes below!
     }
-
-
-
 }`;
 
     // --- INITIALIZE MONACO EDITOR ---
