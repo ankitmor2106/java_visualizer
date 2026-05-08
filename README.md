@@ -231,45 +231,6 @@ The `-g` flag preserves debugging metadata required for JDI memory tracing.
 
 ---
 
-# 🐳 Docker Deployment
-
-The backend is fully containerized with:
-
-- Python 3.9
-- OpenJDK 17
-- FastAPI runtime
-
-## Build Image
-
-```bash
-docker build -t java-memory-visualizer .
-```
-
-## Run Container
-
-```bash
-docker run -p 8000:8000 java-memory-visualizer
-```
-
----
-
-# ☁️ Render Deployment
-
-Recommended deployment platform: **Render**
-
-## Suggested Setup
-
-### Backend
-- Environment: Docker
-- Root Directory: `/backend`
-- Start Command handled by Docker
-
-### Frontend
-- Deploy as static site
-- Publish directory: `/frontend`
-
----
-
 # 🔍 How It Works
 
 1. User writes Java code in Monaco Editor
