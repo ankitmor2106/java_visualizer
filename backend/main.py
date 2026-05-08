@@ -563,12 +563,10 @@ def execute_java(code: str) -> dict[str, Any]:
 
         json_pkg_dir = wd / "org" / "json"
         json_pkg_dir.mkdir(parents=True, exist_ok=True)
-        # WRITE BOTH FILES
         (json_pkg_dir / "JSONObject.java").write_text(JSON_OBJECT_SOURCE, encoding="utf-8")
         (json_pkg_dir / "JSONArray.java").write_text(JSON_ARRAY_SOURCE, encoding="utf-8")
 
         javac_user_cmd = ["javac", "-g", "-d", str(wd), str(user_src)]
-        log.info("Compiling user code: %s", " ".join(javac_user_cmd))
         try:
             user_compile = subprocess.run(
                 javac_user_cmd,
@@ -609,48 +607,24 @@ def execute_java(code: str) -> dict[str, Any]:
             + extra_javac_flags
             + ["-cp", os.pathsep.join(agent_classpath_parts)]
             + ["-d", str(wd)]
-            # COMPILE BOTH FILES ALONG WITH THE AGENT
             + [str(json_pkg_dir / "JSONObject.java"), str(json_pkg_dir / "JSONArray.java"), str(agent_src)]
         )
-        log.info("Compiling agent: %s", " ".join(javac_agent_cmd))
+        
         try:
-            agent_compile = subprocess.run(
-                javac_agent_cmd,
-                capture_output=True,
-                text=True,
-                timeout=COMPILE_TIMEOUT,
-                cwd=str(wd),
-            )
+            subprocess.run(javac_agent_cmd, capture_output=True, text=True, timeout=COMPILE_TIMEOUT, cwd=str(wd))
         except subprocess.TimeoutExpired:
-            return {
-                "success": False,
-                "message": "Agent compilation timed out.",
-                "errors": [],
-                "steps": [],
-                "runtimeError": None,
-            }
-
-        if agent_compile.returncode != 0:
-            log.error("Agent compile failed:\n%s", agent_compile.stderr)
-            return _fallback_trace(code, class_name, wd, jdk_version)
+            return {"success": False, "message": "Agent compilation timed out.", "errors": [], "steps": [], "runtimeError": None}
 
         jdwp_port = _find_free_port()
-        jdwp_arg = (
-            f"transport=dt_socket,server=y,suspend=y,address=127.0.0.1:{jdwp_port}"
-        )
-        user_classpath = str(wd)
-        extra_java_flags: list[str] = []
-        if jdk_version >= 9 and not tools_jar:
-            extra_java_flags = ["--add-modules", "jdk.jdi"]
-
+        jdwp_arg = f"transport=dt_socket,server=y,suspend=y,address=127.0.0.1:{jdwp_port}"
         
-      user_jvm_cmd = (
-           ["java"]
-           + ["-Xmx128m", "-XX:TieredStopAtLevel=1"] 
-           + extra_java_flags
-           + [f"-agentlib:jdwp={jdwp_arg}", "-cp", user_classpath, class_name]
-           )
-        log.info("Launching user JVM: %s", " ".join(user_jvm_cmd))
+        # --- OPTIMIZED USER JVM COMMAND ---
+        user_jvm_cmd = (
+            ["java"]
+            + ["-Xmx128m", "-XX:TieredStopAtLevel=1"]
+            + (["--add-modules", "jdk.jdi"] if jdk_version >= 9 and not tools_jar else [])
+            + [f"-agentlib:jdwp={jdwp_arg}", "-cp", str(wd), class_name]
+        )
 
         user_proc = subprocess.Popen(
             user_jvm_cmd,
@@ -660,22 +634,14 @@ def execute_java(code: str) -> dict[str, Any]:
             cwd=str(wd),
         )
 
-        agent_classpath_parts_rt = [str(wd)]
-        if tools_jar:
-            agent_classpath_parts_rt.append(tools_jar)
-        agent_rt_classpath = os.pathsep.join(agent_classpath_parts_rt)
-
-        agent_java_flags: list[str] = []
-        if jdk_version >= 9 and not tools_jar:
-            agent_java_flags = ["--add-modules", "jdk.jdi"]
-
+        # --- OPTIMIZED AGENT COMMAND ---
+        agent_rt_classpath = os.pathsep.join(agent_classpath_parts)
         agent_cmd = (
-              ["java"]
-              + ["-Xmx128m", "-XX:TieredStopAtLevel=1"] 
-              + agent_java_flags
-               + ["-cp", agent_rt_classpath, "JvmTraceAgent", str(jdwp_port), class_name]
+            ["java"]
+            + ["-Xmx128m", "-XX:TieredStopAtLevel=1"]
+            + (["--add-modules", "jdk.jdi"] if jdk_version >= 9 and not tools_jar else [])
+            + ["-cp", agent_rt_classpath, "JvmTraceAgent", str(jdwp_port), class_name]
         )
-        log.info("Launching trace agent: %s", " ".join(agent_cmd))
 
         agent_proc = subprocess.Popen(
             agent_cmd,
@@ -686,28 +652,21 @@ def execute_java(code: str) -> dict[str, Any]:
         )
 
         stop = threading.Event()
-
-        user_stdout_lines: list[str] = []
-        user_stderr_lines: list[str] = []
-        agent_stdout_lines: list[str] = []
-        agent_stderr_lines: list[str] = []
+        user_stdout_lines, user_stderr_lines = [], []
+        agent_stdout_lines, agent_stderr_lines = [], []
 
         threads = [
-            threading.Thread(target=_stream_reader,
-                             args=(user_proc.stdout,  user_stdout_lines,  stop), daemon=True),
-            threading.Thread(target=_stream_reader,
-                             args=(user_proc.stderr,  user_stderr_lines,  stop), daemon=True),
-            threading.Thread(target=_stream_reader,
-                             args=(agent_proc.stdout, agent_stdout_lines, stop), daemon=True),
-            threading.Thread(target=_stream_reader,
-                             args=(agent_proc.stderr, agent_stderr_lines, stop), daemon=True),
+            threading.Thread(target=_stream_reader, args=(user_proc.stdout, user_stdout_lines, stop), daemon=True),
+            threading.Thread(target=_stream_reader, args=(user_proc.stderr, user_stderr_lines, stop), daemon=True),
+            threading.Thread(target=_stream_reader, args=(agent_proc.stdout, agent_stdout_lines, stop), daemon=True),
+            threading.Thread(target=_stream_reader, args=(agent_proc.stderr, agent_stderr_lines, stop), daemon=True),
         ]
-        for t in threads:
-            t.start()
+        for t in threads: t.start()
 
         timed_out = False
         try:
-            agent_proc.wait(timeout=EXEC_TIMEOUT)
+            # INCREASED TIMEOUT TO 15 SECONDS
+            agent_proc.wait(timeout=15)
         except subprocess.TimeoutExpired:
             timed_out = True
         finally:
@@ -716,43 +675,24 @@ def execute_java(code: str) -> dict[str, Any]:
                 try:
                     proc.kill()
                     proc.wait(timeout=2)
-                except Exception:
-                    pass
+                except Exception: pass
 
-        for t in threads:
-            t.join(timeout=1)
+        for t in threads: t.join(timeout=1)
 
-        raw_agent_out = "".join(agent_stdout_lines)
-        raw_user_out  = "".join(user_stdout_lines)
-        raw_user_err  = "".join(user_stderr_lines)
+        steps = _parse_steps("".join(agent_stdout_lines), "".join(user_stdout_lines))
+        
+        runtime_error = "".join(user_stderr_lines)
+        if "Listening for transport" in runtime_error:
+            runtime_error = "\n".join([l for l in runtime_error.splitlines() if "Listening for transport" not in l])
 
-        log.debug("Agent stderr:\n%s", "".join(agent_stderr_lines))
-
-        steps = _parse_steps(raw_agent_out, raw_user_out)
-
-        runtime_error: Optional[str] = None
-        if raw_user_err.strip():
-            err_lines = [
-                ln for ln in raw_user_err.splitlines()
-                if "Listening for transport" not in ln
-            ]
-            if err_lines:
-                runtime_error = "\n".join(err_lines)
-
-        if not steps:
-            log.warning("Agent produced no steps; falling back to stub trace.")
-            return _fallback_trace(code, class_name, wd, jdk_version)
-
-        if timed_out and steps:
-            if runtime_error:
-                runtime_error += "\n[Execution timed out after 5 seconds]"
-            else:
-                runtime_error = "[Execution timed out after 5 seconds]"
+        if timed_out:
+            timeout_msg = "[Execution timed out after 15 seconds]"
+            runtime_error = f"{runtime_error}\n{timeout_msg}" if runtime_error else timeout_msg
 
         return {
             "success": True,
-            "steps": steps,
-            "runtimeError": runtime_error,
+            "steps": steps if steps else _fallback_trace(code, class_name, wd, jdk_version)["steps"],
+            "runtimeError": runtime_error if runtime_error.strip() else None,
             "totalSteps": len(steps),
         }
 
